@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizMaster | Interactive Quiz App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --accent: #fd79a8;
+            --light: #f7f7f7;
+            --dark: #2d3436;
+            --success: #00b894;
+            --warning: #fdcb6e;
+            --danger: #e17055;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--dark);
+        }
+        
+        .quiz-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 800px;
+            min-height: 500px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: "";
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        
+        .header::after {
+            content: "";
+            position: absolute;
+            bottom: -80px;
+            right: -30px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .content {
+            padding: 30px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .screen.active {
+            display: flex;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+      
+        .start-screen {
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 30px;
+            padding: 20px;
+        }
+        
+        .quiz-icon {
+            font-size: 6rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .feature {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            width: 150px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        
+        .feature:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .feature i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+  
+        .question-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+        }
+        
+        .question-count {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            background: rgba(108, 92, 231, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+        
+        .timer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(253, 121, 168, 0.1);
+            color: var(--danger);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .question {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex: 1;
+        }
+        
+        .option {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 18px 20px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .option:hover {
+            transform: translateX(5px);
+            border-color: var(--secondary);
+        }
+        
+        .option.selected {
+            border-color: var(--primary);
+            background: rgba(108, 92, 231, 0.05);
+        }
+        
+        .option.correct {
+            border-color: var(--success);
+            background: rgba(0, 184, 148, 0.05);
+        }
+        
+        .option.incorrect {
+            border-color: var(--danger);
+            background: rgba(225, 112, 85, 0.05);
+        }
+        
+        .option-letter {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--light);
+            font-weight: 600;
+            color: var(--dark);
+            flex-shrink: 0;
+        }
+        
+        .option.selected .option-letter {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: auto;
+        }
+        
+      
+        .result-screen {
+            align-items: center;
+            text-align: center;
+            padding: 40px 30px;
+            gap: 25px;
+        }
+        
+        .result-icon {
+            font-size: 6rem;
+            color: var(--success);
+            margin-bottom: 10px;
+        }
+        
+        .score-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        .score-value {
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 30px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .score-value::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 5px;
+            background: var(--accent);
+            border-radius: 5px;
+        }
+        
+        .feedback {
+            max-width: 500px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+      
+        .btn {
+            padding: 16px 35px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        
+        .btn-next {
+            background: var(--primary);
+            color: white;
+            padding: 14px 30px;
+            margin-left: auto;
+        }
+        
+        .btn-next:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-restart {
+            background: var(--success);
+            color: white;
+        }
+        
+        
+        .progress-container {
+            width: 100%;
+            background: #eee;
+            border-radius: 10px;
+            height: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+      
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+        
+        .bounce {
+            animation: bounce 1s;
+        }
+        
+        @keyframes tada {
+            0% {transform: scale(1);}
+            10%, 20% {transform: scale(0.9) rotate(-3deg);}
+            30%, 50%, 70%, 90% {transform: scale(1.1) rotate(3deg);}
+            40%, 60%, 80% {transform: scale(1.1) rotate(-3deg);}
+            100% {transform: scale(1) rotate(0);}
+        }
+        
+        .tada {
+            animation: tada 1s;
+        }
+        
+    
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .question {
+                font-size: 1.4rem;
+            }
+            
+            .option {
+                padding: 15px;
+                font-size: 1rem;
+            }
+            
+            .features {
+                gap: 15px;
+            }
+            
+            .feature {
+                width: 130px;
+                padding: 15px;
+            }
+            
+            .feature i {
+                font-size: 2rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .content {
+                padding: 20px 15px;
+            }
+            
+            .question {
+                font-size: 1.3rem;
+            }
+            
+            .btn {
+                padding: 14px 25px;
+                font-size: 1rem;
+            }
+            
+            .features {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .feature {
+                width: 100%;
+                max-width: 250px;
+            }
+            
+            .navigation {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .btn-next {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="header">
+            <h1>QuizMaster Challenge</h1>
+            <p>Test your knowledge with our interactive quiz!</p>
+        </div>
+        
+        <div class="content">
+            <!-- Start Screen -->
+            <div class="screen start-screen active">
+                <div class="quiz-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h2>Are You Ready for the Challenge?</h2>
+                <p>Test your knowledge with 10 carefully crafted questions across various topics.</p>
+                
+                <div class="features">
+                    <div class="feature">
+                        <i class="fas fa-stopwatch"></i>
+                        <h3>Timed Quiz</h3>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-trophy"></i>
+                        <h3>Score Tracking</h3>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-mobile-alt"></i>
+                        <h3>Responsive</h3>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-chart-bar"></i>
+                        <h3>Results</h3>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" id="start-btn">
+                    <i class="fas fa-play"></i> Start Quiz
+                </button>
+            </div>
+            
+            
+            <div class="screen question-screen">
+                <div class="question-header">
+                    <div class="question-count">Question <span id="current">1</span> of <span id="total">10</span></div>
+                    <div class="timer">
+                        <i class="fas fa-clock"></i>
+                        <span id="time">30s</span>
+                    </div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress"></div>
+                </div>
+                
+                <div class="question-container">
+                    <div class="question" id="question-text">
+                        <!-- Question text will be inserted here -->
+                    </div>
+                    
+                    <div class="options" id="options-container">
+                        <!-- Options will be inserted here -->
+                    </div>
+                    
+                    <div class="navigation">
+                        <button class="btn btn-secondary" id="prev-btn">
+                            <i class="fas fa-arrow-left"></i> Previous
+                        </button>
+                        <button class="btn btn-next" id="next-btn" disabled>
+                            Next <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            
+            <div class="screen result-screen">
+                <div class="result-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <h2>Quiz Completed!</h2>
+                <div class="score-text">Your Score:</div>
+                <div class="score-value"><span id="final-score">0</span>/10</div>
+                
+                <p class="feedback" id="feedback">
+                    <!-- Feedback will be inserted here -->
+                </p>
+                
+                <button class="btn btn-restart" id="restart-btn">
+                    <i class="fas fa-redo"></i> Play Again
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+      
+        const quizData = [
+            {
+                question: "Which programming language is primarily used for building web interfaces?",
+                options: ["Java", "Python", "JavaScript", "C++"],
+                answer: 2
+            },
+            {
+                question: "What does CSS stand for?",
+                options: [
+                    "Computer Style Sheets",
+                    "Creative Style System",
+                    "Cascading Style Sheets",
+                    "Colorful Style Sheets"
+                ],
+                answer: 2
+            },
+            {
+                question: "Which of the following is NOT a JavaScript framework?",
+                options: ["React", "Angular", "Laravel", "Vue"],
+                answer: 2
+            },
+            {
+                question: "What is the purpose of the HTML <head> element?",
+                options: [
+                    "To display the main content of the page",
+                    "To contain metadata about the document",
+                    "To create the navigation menu",
+                    "To define the page structure"
+                ],
+                answer: 1
+            },
+            {
+                question: "Which CSS property is used to change the text color?",
+                options: ["text-color", "font-color", "color", "text-style"],
+                answer: 2
+            },
+            {
+                question: "What is the correct way to write an array in JavaScript?",
+                options: [
+                    "const colors = (1:'red', 2:'green', 3:'blue')",
+                    "const colors = ['red', 'green', 'blue']",
+                    "const colors = 'red', 'green', 'blue'",
+                    "const colors = {1:'red', 2:'green', 3:'blue'}"
+                ],
+                answer: 1
+            },
+            {
+                question: "Which HTML tag is used to define an unordered list?",
+                options: ["<ol>", "<list>", "<ul>", "<dl>"],
+                answer: 2
+            },
+            {
+                question: "What does API stand for?",
+                options: [
+                    "Application Programming Interface",
+                    "Advanced Programming Interface",
+                    "Automated Program Interaction",
+                    "Application Process Integration"
+                ],
+                answer: 0
+            },
+            {
+                question: "Which of the following is NOT a valid CSS unit?",
+                options: ["px", "em", "rem", "dm"],
+                answer: 3
+            },
+            {
+                question: "What is the purpose of the 'alt' attribute in HTML images?",
+                options: [
+                    "To add a caption to the image",
+                    "To specify alternative text for accessibility",
+                    "To define the alignment of the image",
+                    "To set the image source"
+                ],
+                answer: 1
+            }
+        ];
+
+        // DOM Elements
+        const startScreen = document.querySelector('.start-screen');
+        const questionScreen = document.querySelector('.question-screen');
+        const resultScreen = document.querySelector('.result-screen');
+        const startBtn = document.getElementById('start-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const currentQuestion = document.getElementById('current');
+        const totalQuestions = document.getElementById('total');
+        const finalScore = document.getElementById('final-score');
+        const feedback = document.getElementById('feedback');
+        const progressBar = document.getElementById('progress');
+        const timerElement = document.getElementById('time');
+
+        
+        let currentQ = 0;
+        let score = 0;
+        let selectedOption = null;
+        let timer;
+        let timeLeft = 30;
+        let userAnswers = Array(quizData.length).fill(null);
+
+        
+        totalQuestions.textContent = quizData.length;
+        
+      
+        startBtn.addEventListener('click', startQuiz);
+        nextBtn.addEventListener('click', nextQuestion);
+        prevBtn.addEventListener('click', prevQuestion);
+        restartBtn.addEventListener('click', restartQuiz);
+
+      
+        function startQuiz() {
+            startScreen.classList.remove('active');
+            questionScreen.classList.add('active');
+            currentQ = 0;
+            score = 0;
+            userAnswers.fill(null);
+            loadQuestion();
+            startTimer();
+            
+            
+            startBtn.classList.add('bounce');
+            setTimeout(() => {
+                startBtn.classList.remove('bounce');
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            clearInterval(timer);
+            timeLeft = 30;
+            timerElement.textContent = `${timeLeft}s`;
+            
+            const question = quizData[currentQ];
+            questionText.textContent = question.question;
+            optionsContainer.innerHTML = '';
+            
+        
+            currentQuestion.textContent = currentQ + 1;
+            progressBar.style.width = `${((currentQ) / quizData.length) * 100}%`;
+            
+            
+            const letters = ['A', 'B', 'C', 'D'];
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.classList.add('option');
+                
+                
+                if (userAnswers[currentQ] === index) {
+                    optionElement.classList.add('selected');
+                    selectedOption = optionElement;
+                    nextBtn.disabled = false;
+                }
+                
+                optionElement.innerHTML = `
+                    <div class="option-letter">${letters[index]}</div>
+                    <div class="option-text">${option}</div>
+                `;
+                
+                optionElement.addEventListener('click', () => selectOption(optionElement, index));
+                optionsContainer.appendChild(optionElement);
+            });
+            
+        
+            prevBtn.disabled = currentQ === 0;
+            
+          
+            startTimer();
+        }
+
+        function selectOption(optionElement, index) {
+            // Deselect previous selection
+            if (selectedOption) {
+                selectedOption.classList.remove('selected');
+            }
+            
+
+            optionElement.classList.add('selected');
+            selectedOption = optionElement;
+            nextBtn.disabled = false;
+            
+            // Save user answer
+            userAnswers[currentQ] = index;
+            
+         
+            optionElement.classList.add('tada');
+            setTimeout(() => {
+                optionElement.classList.remove('tada');
+            }, 1000);
+        }
+
+        function startTimer() {
+            clearInterval(timer);
+            timeLeft = 30;
+            timerElement.textContent = `${timeLeft}s`;
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = `${timeLeft}s`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    nextQuestion();
+                }
+            }, 1000);
+        }
+
+        function nextQuestion() {
+            // Check if answer is correct
+            if (userAnswers[currentQ] === quizData[currentQ].answer) {
+                score++;
+            }
+            
+        
+            if (currentQ < quizData.length - 1) {
+                currentQ++;
+                loadQuestion();
+            } else {
+                showResults();
+            }
+            
+            
+            nextBtn.classList.add('bounce');
+            setTimeout(() => {
+                nextBtn.classList.remove('bounce');
+            }, 1000);
+        }
+
+        function prevQuestion() {
+            if (currentQ > 0) {
+                currentQ--;
+                loadQuestion();
+            }
+            
+          
+            prevBtn.classList.add('bounce');
+            setTimeout(() => {
+                prevBtn.classList.remove('bounce');
+            }, 1000);
+        }
+
+        function showResults() {
+            clearInterval(timer);
+            questionScreen.classList.remove('active');
+            resultScreen.classList.add('active');
+            
+            finalScore.textContent = score;
+            progressBar.style.width = '100%';
+            
+          
+            if (score >= 8) {
+                feedback.textContent = "Outstanding! You really know your stuff. Your web development knowledge is impressive!";
+            } else if (score >= 5) {
+                feedback.textContent = "Good job! You have a solid understanding of web development concepts. Keep learning!";
+            } else {
+                feedback.textContent = "Nice try! Web development is a broad field. Keep studying and you'll improve!";
+            }
+            
+            // Add animation
+            document.querySelector('.result-icon').classList.add('tada');
+            setTimeout(() => {
+                document.querySelector('.result-icon').classList.remove('tada');
+            }, 1000);
+        }
+
+        function restartQuiz() {
+            resultScreen.classList.remove('active');
+            startScreen.classList.add('active');
+            
+          
+            restartBtn.classList.add('bounce');
+            setTimeout(() => {
+                restartBtn.classList.remove('bounce');
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
